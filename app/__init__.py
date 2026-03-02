@@ -1,7 +1,7 @@
 from flask import Flask
 
 from app.extensions import db, migrate
-from app.routes import api_bp
+from app.routes import api_bp, ui_bp
 
 
 def create_app(config_object: str = "config.Config") -> Flask:
@@ -12,5 +12,6 @@ def create_app(config_object: str = "config.Config") -> Flask:
     migrate.init_app(app, db)
 
     app.register_blueprint(api_bp)
+    app.register_blueprint(ui_bp)
 
     return app
