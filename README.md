@@ -67,6 +67,11 @@ flask db migrate -m "initial schema"
 flask db upgrade
 ```
 
+
+## UI Templates
+
+A starter server-rendered UI is available at `/` to help manually test Users, Designs, and Movements APIs.
+
 ## REST API Endpoints
 
 ### Health

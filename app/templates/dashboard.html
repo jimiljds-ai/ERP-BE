@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ERP Backend UI Templates</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <header>
+      <h1>Jewelry ERP - UI Template</h1>
+      <p>Starter interface for browsing API entities and posting sample records.</p>
+    </header>
+
+    <main class="grid">
+      <section class="card">
+        <h2>Users</h2>
+        <form id="user-form">
+          <input name="username" placeholder="Username" required />
+          <input name="email" type="email" placeholder="Email" required />
+          <input name="password" type="password" placeholder="Password" required />
+          <input name="role" placeholder="Role (operator/supervisor/admin)" />
+          <button type="submit">Create User</button>
+        </form>
+        <button data-load="users">Refresh Users</button>
+        <pre id="users-output"></pre>
+      </section>
+
+      <section class="card">
+        <h2>Designs</h2>
+        <form id="design-form">
+          <input name="design_code" placeholder="Design Code" required />
+          <input name="name" placeholder="Name" required />
+          <input name="metal_type" placeholder="Metal Type" required />
+          <input name="target_weight_grams" type="number" step="0.01" placeholder="Target Weight" required />
+          <textarea name="description" placeholder="Description"></textarea>
+          <button type="submit">Create Design</button>
+        </form>
+        <button data-load="designs">Refresh Designs</button>
+        <pre id="designs-output"></pre>
+      </section>
+
+      <section class="card">
+        <h2>Movements</h2>
+        <form id="movement-form">
+          <input name="design_id" type="number" placeholder="Design ID" required />
+          <input name="performed_by_user_id" type="number" placeholder="User ID" required />
+          <input name="stage" placeholder="Stage (e.g. CASTING)" required />
+          <input name="movement_type" placeholder="INFLOW/OUTFLOW" required />
+          <input name="quantity" type="number" step="0.01" placeholder="Quantity" required />
+          <input name="reference_no" placeholder="Reference" />
+          <textarea name="remarks" placeholder="Remarks"></textarea>
+          <button type="submit">Create Movement</button>
+        </form>
+        <button data-load="movements">Refresh Movements</button>
+        <pre id="movements-output"></pre>
+      </section>
+    </main>
+
+    <script>
+      async function api(path, method = 'GET', body = null) {
+        const response = await fetch(`/api/${path}`, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: body ? JSON.stringify(body) : null,
+        });
+        const text = await response.text();
+        const payload = text ? JSON.parse(text) : null;
+        if (!response.ok) {
+          throw new Error(JSON.stringify(payload));
+        }
+        return payload;
+      }
+
+      function getFormData(form) {
+        const data = Object.fromEntries(new FormData(form).entries());
+        for (const [key, value] of Object.entries(data)) {
+          if (value === '') delete data[key];
+        }
+        return data;
+      }
+
+      document.querySelector('[data-load="users"]').onclick = async () => {
+        document.querySelector('#users-output').textContent = JSON.stringify(await api('users'), null, 2);
+      };
+      document.querySelector('[data-load="designs"]').onclick = async () => {
+        document.querySelector('#designs-output').textContent = JSON.stringify(await api('designs'), null, 2);
+      };
+      document.querySelector('[data-load="movements"]').onclick = async () => {
+        document.querySelector('#movements-output').textContent = JSON.stringify(await api('movements'), null, 2);
+      };
+
+      document.querySelector('#user-form').onsubmit = async (event) => {
+        event.preventDefault();
+        try {
+          const data = getFormData(event.target);
+          await api('users', 'POST', data);
+          event.target.reset();
+          document.querySelector('[data-load="users"]').click();
+        } catch (error) {
+          alert(error.message);
+        }
+      };
+
+      document.querySelector('#design-form').onsubmit = async (event) => {
+        event.preventDefault();
+        try {
+          const data = getFormData(event.target);
+          data.target_weight_grams = Number(data.target_weight_grams);
+          await api('designs', 'POST', data);
+          event.target.reset();
+          document.querySelector('[data-load="designs"]').click();
+        } catch (error) {
+          alert(error.message);
+        }
+      };
+
+      document.querySelector('#movement-form').onsubmit = async (event) => {
+        event.preventDefault();
+        try {
+          const data = getFormData(event.target);
+          data.design_id = Number(data.design_id);
+          data.performed_by_user_id = Number(data.performed_by_user_id);
+          data.quantity = Number(data.quantity);
+          await api('movements', 'POST', data);
+          event.target.reset();
+          document.querySelector('[data-load="movements"]').click();
+        } catch (error) {
+          alert(error.message);
+        }
+      };
+    </script>
+  </body>
+</html>

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, render_template, request
 from marshmallow import ValidationError
 from sqlalchemy.exc import IntegrityError
 
@@ -19,6 +19,7 @@ from app.schemas import (
 )
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
+ui_bp = Blueprint("ui", __name__)
 
 
 user_create_schema = UserCreateSchema()
@@ -78,6 +79,11 @@ def parse_or_400(schema, payload):
         return schema.load(payload), None
     except ValidationError as err:
         return None, (jsonify({"errors": err.messages}), 400)
+
+
+@ui_bp.get("/")
+def dashboard():
+    return render_template("dashboard.html")
 
 
 @api_bp.get("/health")
